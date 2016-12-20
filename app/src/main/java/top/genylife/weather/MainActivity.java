@@ -11,9 +11,14 @@ import android.view.WindowManager;
 
 import java.util.ArrayList;
 
+import top.genylife.weather.injector.components.DaggerMainActivityComponent;
+import top.genylife.weather.injector.components.MainActivityComponent;
+import top.genylife.weather.injector.modules.MainActivityModule;
+
 public class MainActivity extends AppCompatActivity {
 
     ViewPager mViewPager;
+    MainActivityComponent mActivityComponent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +28,15 @@ public class MainActivity extends AppCompatActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(Color.TRANSPARENT);
         setContentView(R.layout.activity_main);
+
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
+
+        mActivityComponent= DaggerMainActivityComponent.builder()
+                .appComponent(((App)getApplication()).getAppComponent())
+                .mainActivityModule(new MainActivityModule(this))
+                .build();
+        mActivityComponent.inject(this);
+
         ArrayList<Fragment> fragments = new ArrayList<>();
         fragments.add(new WeatherFragment());
         fragments.add(new WeatherFragment());
@@ -31,5 +44,7 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.setAdapter(new FragmentsPagerAdapter(getSupportFragmentManager(), fragments));
     }
 
-
+    public MainActivityComponent getComponent() {
+        return mActivityComponent;
+    }
 }
