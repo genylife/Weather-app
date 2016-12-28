@@ -1,8 +1,6 @@
 package top.genylife.weather.injector.components;
 
-import android.support.v4.app.Fragment;
-
-import dagger.Component;
+import dagger.Subcomponent;
 import top.genylife.weather.WeatherFragment;
 import top.genylife.weather.injector.PerFragment;
 import top.genylife.weather.injector.modules.WeatherFragmentModule;
@@ -13,10 +11,9 @@ import top.genylife.weather.injector.modules.WeatherFragmentModule;
  * @since 1.0.0
  */
 @PerFragment
-@Component(modules = WeatherFragmentModule.class, dependencies = {MainActivityComponent.class})
+@Subcomponent(modules = WeatherFragmentModule.class)
 public interface WeatherFragmentComponent {
 
     void inject(WeatherFragment weatherFragment);
 
-    Fragment fragment();
 }

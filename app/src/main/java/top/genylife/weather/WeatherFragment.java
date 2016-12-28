@@ -1,21 +1,37 @@
 package top.genylife.weather;
 
+import android.databinding.DataBindingUtil;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.utils.ViewPortHandler;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
-import top.genylife.weather.m.RealTimeWeather;
-import top.genylife.weather.net.Weather;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
+import top.genylife.weather.databinding.FragmentWeatherBinding;
+import top.genylife.weather.m.forecast.ForeCastWeather;
+import top.genylife.weather.m.location.GEOLocation;
+import top.genylife.weather.m.location.Location;
+import top.genylife.weather.m.realtime.RealTimeWeather;
+import top.genylife.weather.net.LocationService;
+import top.genylife.weather.net.WeatherService;
 
 /**
  * Created by wanqi on 2016/12/15.
@@ -29,31 +45,120 @@ public class WeatherFragment extends Fragment {
     @Inject
     Retrofit mRetrofit;
 
+    FragmentWeatherBinding mBinding;
+
+    ArrayList<Entry> ymVals;
+    ArrayList<Entry> ynVals;
+
+    private Location mLocation;
+
+    public static WeatherFragment create(Location location) {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("Location", location);
+        WeatherFragment fragment = new WeatherFragment();
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        DaggerWeatherFragmentComponent.builder()
-//                .weatherFragmentModule(new WeatherFragmentModule(this))
-//                .mainActivityComponent(((MainActivity) getActivity()).getComponent())
-//                .build()
-//                .inject(this);
-        mRetrofit.create(Weather.class).realTime(121, 25).enqueue(new Callback<RealTimeWeather>() {
-            @Override
-            public void onResponse(Call<RealTimeWeather> call, Response<RealTimeWeather> response) {
-                Log.i("asd", response.body().toString());
-            }
-
-            @Override
-            public void onFailure(Call<RealTimeWeather> call, Throwable t) {
-
-            }
-        });
+        ((MainActivity) getActivity()).getComponent().subComponent().inject(this);
+        mLocation = getArguments().getParcelable("Location");
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_weather, container, false);
-        return view;
+        mRetrofit.create(LocationService.class)
+                .getLocation(LocationService.ak, LocationService.output, mLocation.urlFormat(), LocationService.mcode)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<GEOLocation>() {
+                    @Override
+                    public void call(GEOLocation geoLocation) {
+                        mBinding.setLocation(geoLocation.getResult().getAddressComponent().getDistrict());
+                    }
+                });
+
+        mRetrofit.create(WeatherService.class)
+                .realTime(mLocation.getLng(), mLocation.getLat())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<RealTimeWeather>() {
+                    @Override
+                    public void call(RealTimeWeather realTimeWeather) {
+                        mBinding.setRealTime(realTimeWeather);
+                    }
+                });
+
+        mRetrofit.create(WeatherService.class)
+                .foreCast(mLocation.getLng(), mLocation.getLat())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<ForeCastWeather>() {
+                    @Override
+                    public void call(ForeCastWeather foreCastWeather) {
+                        initChart(foreCastWeather);
+                        mBinding.viewFiveDay.setWeather(foreCastWeather.getResult().getDaily());
+                        mBinding.setTemperature(foreCastWeather.getResult().getDaily().getTemperature().get(0).getValue());
+                    }
+                });
+        mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_weather, container, false);
+        ymVals = new ArrayList<>();
+        ynVals = new ArrayList<>();
+        return mBinding.getRoot();
     }
+
+    private void initChart(ForeCastWeather foreCastWeather) {
+        for (int i = 0; i < 5; i++) {
+            ymVals.add(new Entry(i, (float) foreCastWeather.getResult().getDaily().getTemperature().get(i).getMax()));
+            ynVals.add(new Entry(i, (float) foreCastWeather.getResult().getDaily().getTemperature().get(i).getMin()));
+        }
+        LineDataSet dataSetm = createDataSet(ymVals, "m", Color.rgb(214, 127, 111), Color.rgb(214, 127, 111), Color.BLUE);
+        LineDataSet dataSetn = createDataSet(ynVals, "n", Color.rgb(247, 181, 66), Color.rgb(247, 181, 66), Color.GREEN);
+
+        LineData data = new LineData();
+        data.addDataSet(dataSetn);
+        data.addDataSet(dataSetm);
+        mBinding.chart.setData(data);
+
+        mBinding.chart.getXAxis().setDrawAxisLine(true);
+        mBinding.chart.getXAxis().setTextSize(10f);
+        Description description = new Description();
+        description.setText("温度走势图");
+        mBinding.chart.getXAxis().setTextColor(Color.BLACK);
+        mBinding.chart.setDescription(description);
+        mBinding.chart.getLegend().setEnabled(false);
+        mBinding.chart.getXAxis().setEnabled(false);
+        mBinding.chart.getAxisLeft().setDrawAxisLine(false);
+        mBinding.chart.getAxisLeft().setEnabled(false);
+        mBinding.chart.getAxisRight().setDrawAxisLine(false);
+        mBinding.chart.getAxisRight().setEnabled(false);
+        mBinding.chart.setTouchEnabled(false);
+        mBinding.chart.invalidate();
+    }
+
+    private LineDataSet createDataSet(List<Entry> entries, String lable, int lineColor, int fillColor, int textColor) {
+        LineDataSet dataSet = new LineDataSet(entries, lable);
+        dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+
+        dataSet.setValueTextSize(15f);
+        dataSet.setValueTextColor(textColor);
+
+        dataSet.setColor(lineColor);
+
+        dataSet.setFillAlpha(200);
+        dataSet.setFillColor(fillColor);
+
+        dataSet.setValueFormatter(new IValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+                return (int) value + "°";
+            }
+        });
+        dataSet.setDrawFilled(true);
+        return dataSet;
+    }
+
 }

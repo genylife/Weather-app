@@ -1,93 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/tv_city"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="38dp"
-        android:gravity="center"
-        android:text="Los Angeles"
-        android:textColor="@android:color/white"
-        android:textSize="23sp" />
+    <data>
 
-    <TextView
-        android:id="@+id/tv_weather"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tv_city"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="Sunny"
-        android:textColor="@android:color/white"
-        android:textSize="17sp" />
+        <variable
+            name="temperature"
+            type="String" />
+        <variable
+            name="location"
+            type="String" />
 
-    <TextView
-        android:id="@+id/tv_temperature_now"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tv_weather"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="48'"
-        android:textColor="@android:color/white"
-        android:textSize="100sp" />
+        <variable
+            name="realTime"
+            type="top.genylife.weather.m.realtime.RealTimeWeather" />
 
-    <TextView
-        android:id="@+id/tv_temperature"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tv_temperature_now"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="48'/90'"
-        android:textColor="@android:color/white"
-        android:textSize="15sp" />
+        <variable
+            name="forecast"
+            type="top.genylife.weather.m.forecast.ForeCastWeather" />
+    </data>
+
+    <RelativeLayout android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_city"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="38dp"
+            android:gravity="center"
+            tools:text="123456"
+            android:text="@{location}"
+            android:textColor="@android:color/white"
+            android:textSize="23sp" />
+
+        <TextView
+            android:id="@+id/tv_weather"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_city"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            tools:text="123456"
+            android:text="@{realTime.result.skycon.value}"
+            android:textColor="@android:color/white"
+            android:textSize="17sp" />
+
+        <TextView
+            android:id="@+id/tv_temperature_now"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_weather"
+            android:layout_marginTop="8dp" tools:text="56"
+            android:gravity="center"
+            android:text="@{realTime.result.getTemperatureString()}"
+            android:textColor="@android:color/white"
+            android:textSize="100sp" />
+
+        <TextView
+            android:id="@+id/tv_temperature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_temperature_now"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@{temperature}"
+            android:textColor="@android:color/white"
+            android:textSize="15sp" />
 
 
-    <top.genylife.weather.SevenDayWeatherView
-        android:id="@+id/view_seven_day"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/tv_temperature">
+        <top.genylife.weather.DayWeatherView
+            android:id="@+id/view_five_day"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_temperature">
 
-        <top.genylife.weather.WeatherView
-            android:layout_width="0dp"
+            <top.genylife.weather.WeatherView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <top.genylife.weather.WeatherView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <top.genylife.weather.WeatherView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <top.genylife.weather.WeatherView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <top.genylife.weather.WeatherView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+        </top.genylife.weather.DayWeatherView>
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/chart"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
-
-        <top.genylife.weather.WeatherView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-
-        <top.genylife.weather.WeatherView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-
-        <top.genylife.weather.WeatherView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-
-        <top.genylife.weather.WeatherView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-
-        <top.genylife.weather.WeatherView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-
-        <top.genylife.weather.WeatherView
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
-    </top.genylife.weather.SevenDayWeatherView>
-
-</RelativeLayout>
+            android:layout_below="@+id/view_five_day" />
+    </RelativeLayout>
+</layout>

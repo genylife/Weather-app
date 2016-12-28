@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
@@ -11,14 +12,14 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:maxLines="1"
-        android:text="Sunday"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        tools:text="Sunday" />
 
     <ImageView
         android:id="@+id/weather_image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@mipmap/ic_launcher" />
+        tools:src="@mipmap/ic_launcher" />
 
     <TextView
         android:id="@+id/temperature"
@@ -26,6 +27,6 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:maxLines="1"
-        android:text="09'/12'"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        tools:text="09'/12'" />
 </LinearLayout>

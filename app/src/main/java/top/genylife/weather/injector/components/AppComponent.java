@@ -17,5 +17,7 @@ import top.genylife.weather.injector.modules.AppModule;
 public interface AppComponent {
 
     App app();
+
     Retrofit retrofit();
+
 }

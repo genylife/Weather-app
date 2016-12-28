@@ -39,13 +39,13 @@ public class AppModule {
         return new OkHttpClient.Builder()
                 .retryOnConnectionFailure(true)
                 .connectTimeout(10, TimeUnit.SECONDS)
-                .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.HEADERS))
+                .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
                 .build();
     }
 
     @Provides
     @Singleton
-    Retrofit provideRetrofit(OkHttpClient client) {
+    Retrofit provideRetrofitForWeather(OkHttpClient client) {
         return new Retrofit.Builder()
                 .baseUrl("https://api.caiyunapp.com/v2/A=lIEM0fjcKdQHAZ/")
                 .client(client)

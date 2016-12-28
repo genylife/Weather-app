@@ -18,5 +18,7 @@ public interface MainActivityComponent {
 
     void inject(MainActivity mainActivity);
 
+    WeatherFragmentComponent subComponent();
+
     Activity activity();
 }

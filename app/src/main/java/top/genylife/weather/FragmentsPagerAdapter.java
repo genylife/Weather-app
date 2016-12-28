@@ -32,4 +32,9 @@ public class FragmentsPagerAdapter extends FragmentPagerAdapter {
     public int getCount() {
         return mFragmentList.size();
     }
+
+    public void addFragment(Fragment fragment) {
+        mFragmentList.add(fragment);
+        notifyDataSetChanged();
+    }
 }
