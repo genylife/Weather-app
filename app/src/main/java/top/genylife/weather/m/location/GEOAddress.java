@@ -1,15 +1,15 @@
 package top.genylife.weather.m.location;
 
 /**
- * Created by wanqi on 2017/1/4.
+ * Created by wanqi on 2016/12/27.
  *
  * @since 1.0.0
  */
 
-public class GEOLocation {
+public class GEOAddress {
 
     private int status;
-    private LocationResult result;
+    private AddressResult result;
 
     public int getStatus() {
         return status;
@@ -19,11 +19,11 @@ public class GEOLocation {
         this.status = status;
     }
 
-    public LocationResult getResult() {
+    public AddressResult getResult() {
         return result;
     }
 
-    public void setResult(LocationResult result) {
+    public void setResult(AddressResult result) {
         this.result = result;
     }
 }

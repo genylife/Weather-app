@@ -23,6 +23,11 @@ public class Location implements Parcelable {
         this.lat = lat;
     }
 
+    public Location(String lng, String lat) {
+        this.lng = Double.parseDouble(lng);
+        this.lat = Double.parseDouble(lat);
+    }
+
     public String urlFormat() {
         return lat + "," + lng;
     }

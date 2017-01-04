@@ -1,5 +1,6 @@
 package top.genylife.weather.injector.modules;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Singleton;
@@ -12,6 +13,7 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.fastjson.FastJsonConverterFactory;
 import top.genylife.weather.App;
+import top.genylife.weather.m.location.Location;
 
 /**
  * Created by wanqi on 2016/12/19.
@@ -22,9 +24,17 @@ import top.genylife.weather.App;
 public class AppModule {
 
     private final App application;
+    private Map<String, Location> mAllLocation;
 
-    public AppModule(App application) {
+    public AppModule(App application, Map<String, Location> map) {
         this.application = application;
+        mAllLocation = map;
+    }
+
+    @Provides
+    @Singleton
+    Map<String, Location> provideAllLocation() {
+        return mAllLocation;
     }
 
     @Provides

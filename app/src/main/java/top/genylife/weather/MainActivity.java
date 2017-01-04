@@ -1,5 +1,6 @@
 package top.genylife.weather;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -8,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Toast;
+import android.widget.ImageView;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -16,83 +17,144 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
+import javax.inject.Inject;
+
+import retrofit2.Retrofit;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 import top.genylife.weather.injector.components.DaggerMainActivityComponent;
 import top.genylife.weather.injector.components.MainActivityComponent;
 import top.genylife.weather.injector.modules.MainActivityModule;
+import top.genylife.weather.m.location.GEOLocation;
 import top.genylife.weather.m.location.Location;
+import top.genylife.weather.net.LocationService;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    ViewPager mViewPager;
     MainActivityComponent mActivityComponent;
-
-    List<Location> mLocationList;
 
     FragmentsPagerAdapter pagerAdapter;
 
-    public LocationClient mLocationClient = null;
-    public BDLocationListener myListener = new MyLocationListener();
+    @Inject
+    LocationClient mLocationClient;
+    @Inject
+    LocationClientOption mLocationClientOption;
+
+    @Inject
+    Retrofit mRetrofit;
+    @Inject
+    Map<String, Location> mAllLocation;
+
+    ViewPager mViewPager;
+    ImageView mActionAdd;
+    ImageView mActionSetting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initUI();
+        initInjector();
+
+        //注册监听函数
+        mLocationClient.registerLocationListener(new BDLocationListener() {
+            @Override
+            public void onReceiveLocation(BDLocation location) {
+                WeatherFragment fragment = WeatherFragment.create(new Location(location.getLongitude(), location.getLatitude())
+                        , location.getDistrict());
+                pagerAdapter.addFragment(fragment);
+                mLocationClient.stop();
+            }
+        });
+        mLocationClient.setLocOption(mLocationClientOption);
+        mLocationClient.start();
+
+        ArrayList<Fragment> fragments = new ArrayList<>();
+        Iterator<Map.Entry<String, Location>> iterator = mAllLocation.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, Location> next = iterator.next();
+            fragments.add(WeatherFragment.create(next.getValue(), next.getKey()));
+        }
+        pagerAdapter = new FragmentsPagerAdapter(getSupportFragmentManager(), fragments);
+        mViewPager.setAdapter(pagerAdapter);
+    }
+
+    private void initInjector() {
+        mActivityComponent = DaggerMainActivityComponent.builder()
+                .appComponent(((App) getApplication()).getAppComponent())
+                .mainActivityModule(new MainActivityModule(this))
+                .build();
+        mActivityComponent.inject(this);
+    }
+
+    private void initUI() {
         Window window = getWindow();
         window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(Color.TRANSPARENT);
         setContentView(R.layout.activity_main);
 
-        mLocationClient = new LocationClient(getApplicationContext());     //声明LocationClient类
-        initLocation();
-        mLocationClient.registerLocationListener(myListener);    //注册监听函数
-        mLocationClient.start();
-
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
-
-        mLocationList = new ArrayList<>();
-        mLocationList.add(new Location(121.483, 31.2333));
-
-        mActivityComponent = DaggerMainActivityComponent.builder()
-                .appComponent(((App) getApplication()).getAppComponent())
-                .mainActivityModule(new MainActivityModule(this))
-                .build();
-        mActivityComponent.inject(this);
-
-        ArrayList<Fragment> fragments = new ArrayList<>();
-//        fragments.add(WeatherFragment.create(mLocationList.get(0)));
-        pagerAdapter = new FragmentsPagerAdapter(getSupportFragmentManager(), fragments);
-        mViewPager.setAdapter(pagerAdapter);
-    }
-
-    private void initLocation() {
-        LocationClientOption option = new LocationClientOption();
-        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
-        option.setCoorType("bd09ll");//可选，默认gcj02，设置返回的定位结果坐标系
-        option.setScanSpan(0);//可选，默认0，即仅定位一次，设置发起定位请求的间隔需要大于等于1000ms才是有效的
-        option.setIsNeedAddress(true);//可选，设置是否需要地址信息，默认不需要
-        option.setOpenGps(true);//可选，默认false,设置是否使用gps
-        option.setLocationNotify(true);//可选，默认false，设置是否当GPS有效时按照1S/1次频率输出GPS结果
-        option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
-        option.setIsNeedLocationPoiList(false);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
-        option.setIgnoreKillProcess(false);//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
-        option.SetIgnoreCacheException(false);//可选，默认false，设置是否收集CRASH信息，默认收集
-        option.setEnableSimulateGps(false);//可选，默认false，设置是否需要过滤GPS仿真结果，默认需要
-        mLocationClient.setLocOption(option);
-    }
-
-    class MyLocationListener implements BDLocationListener {
-
-        @Override
-        public void onReceiveLocation(BDLocation location) {
-            Toast.makeText(MainActivity.this, location.getCity(), Toast.LENGTH_SHORT).show();
-            WeatherFragment fragment = WeatherFragment.create(new Location(location.getLongitude(), location.getLatitude()));
-            pagerAdapter.addFragment(fragment);
-        }
+        mActionAdd = (ImageView) findViewById(R.id.action_add);
+        mActionSetting = (ImageView) findViewById(R.id.action_setting);
+        mActionAdd.setOnClickListener(this);
+        mActionSetting.setOnClickListener(this);
     }
 
     public MainActivityComponent getComponent() {
         return mActivityComponent;
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.action_add:
+                actionAdd();
+                break;
+            case R.id.action_setting:
+                actionSetting();
+                break;
+        }
+    }
+
+    private void actionSetting() {
+        Set<? extends Map.Entry<String, ?>> entries = mAllLocation.entrySet();
+    }
+
+    private void actionAdd() {
+        AddLocationDialog.create(new AddLocationDialog.CallBack() {
+            @Override
+            public void call(final String text) {
+                mRetrofit.create(LocationService.class)
+                        .getLocation(LocationService.ak, LocationService.output, text, LocationService.mcode)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Action1<GEOLocation>() {
+                            @Override
+                            public void call(GEOLocation geoLocation) {
+                                SharedPreferences sharedPreferences = getSharedPreferences("Weather", MODE_PRIVATE);
+                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                Set<String> tempSet = new HashSet<>();
+                                tempSet.add("" + geoLocation.getResult().getLocation().getLng());
+                                tempSet.add("" + geoLocation.getResult().getLocation().getLat());
+                                String s = geoLocation.getResult().getLevel();
+                                String temp = "";
+                                if(s.equals("城市")) temp = "市";
+                                if(s.equals("区县")) temp = "区";
+                                editor.putStringSet(text + temp, tempSet);
+                                editor.apply();
+                                pagerAdapter.addFragment(WeatherFragment.create(
+                                        new Location(geoLocation.getResult().getLocation().getLng()
+                                                , geoLocation.getResult().getLocation().getLat())
+                                        , text + temp));
+                            }
+                        });
+            }
+        }).show(getFragmentManager(), "DIALOG");
     }
 }

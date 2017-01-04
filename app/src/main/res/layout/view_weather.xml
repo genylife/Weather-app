@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:maxLines="1"
+        android:textColor="@android:color/white"
         android:textSize="12sp"
         tools:text="Sunday" />
 
@@ -27,6 +28,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:maxLines="1"
+        android:textColor="@android:color/white"
         android:textSize="12sp"
         tools:text="09'/12'" />
 </LinearLayout>

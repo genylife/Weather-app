@@ -5,7 +5,7 @@ package top.genylife.weather.m.location;
  *
  * @since 1.0.0
  */
-public class Result {
+public class AddressResult {
 
     private Location location;
     private String formatted_address;

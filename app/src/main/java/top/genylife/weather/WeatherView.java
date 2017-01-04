@@ -45,7 +45,7 @@ public class WeatherView extends FrameLayout {
     }
 
     public void setWeather(Range temperature, SkyconValue skycon, String week) {
-        mTemperature.setText(temperature.getTempatureValue());
+        mTemperature.setText(temperature.getTemperatureValue());
 
         mDayOfWeek.setText(week);
         switch (skycon.getValue()) {
@@ -76,6 +76,13 @@ public class WeatherView extends FrameLayout {
             case FOG:
                 mWeatherImage.setImageResource(R.mipmap.ic_fog);
                 break;
+            case HAZE:
+                mWeatherImage.setImageResource(R.mipmap.ic_fog);
+                break;
+            case SLEET:
+                mWeatherImage.setImageResource(R.mipmap.ic_fog);
+                break;
+                        
         }
     }
 

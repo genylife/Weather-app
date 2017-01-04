@@ -15,7 +15,9 @@ public enum Skycon {
     RAIN("雨", 6),// 雨
     SNOW("雪", 7),//雪
     WIND("风", 8),//风
-    FOG("雾", 9);//雾
+    FOG("雾", 9),//雾
+    HAZE("霾",10),//霾
+    SLEET("冻雨",11);//冻雨
 
     private String mValue;
     private int mIndex;

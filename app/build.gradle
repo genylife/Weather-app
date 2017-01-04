@@ -11,6 +11,8 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        renderscriptTargetApi 22
+        renderscriptSupportModeEnabled true
     }
     sourceSets {
         main {
@@ -37,9 +39,8 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.2.0'
     compile 'com.android.support:recyclerview-v7:24.2.0'
-    provided 'com.google.auto.value:auto-value:1.2'
-    apt 'com.google.auto.value:auto-value:1.2'
     compile 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
+    compile 'fr.tvbarthel.blurdialogfragment:lib:2.2.0'
     compile 'com.google.dagger:dagger:2.8'
     apt 'com.google.dagger:dagger-compiler:2.8'
     compile 'io.reactivex:rxandroid:1.2.1'

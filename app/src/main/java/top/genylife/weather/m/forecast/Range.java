@@ -19,7 +19,7 @@ public class Range {
         return min + "/" + max;
     }
 
-    public String getTempatureValue() {
+    public String getTemperatureValue() {
         return (int) min + "°" + "/" + (int) max + "°";
     }
 
