@@ -76,6 +76,10 @@ public class WeatherFragment extends Fragment {
         mDistrict = getArguments().getString("District", "");
     }
 
+    public String getDistrict() {
+        return mDistrict;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -97,7 +101,8 @@ public class WeatherFragment extends Fragment {
                     .subscribe(new Action1<GEOAddress>() {
                         @Override
                         public void call(GEOAddress geoLocation) {
-                            mBinding.setLocation(geoLocation.getResult().getAddressComponent().getDistrict());
+                            mDistrict = geoLocation.getResult().getAddressComponent().getDistrict();
+                            mBinding.setLocation(mDistrict);
                         }
                     }, onError);
         }
@@ -136,8 +141,10 @@ public class WeatherFragment extends Fragment {
             ymVals.add(new Entry(i, (float) foreCastWeather.getResult().getDaily().getTemperature().get(i).getMax()));
             ynVals.add(new Entry(i, (float) foreCastWeather.getResult().getDaily().getTemperature().get(i).getMin()));
         }
-        LineDataSet dataSetm = createDataSet(ymVals, "m", Color.rgb(214, 127, 111), Color.rgb(214, 127, 111), Color.WHITE);
-        LineDataSet dataSetn = createDataSet(ynVals, "n", Color.rgb(247, 181, 66), Color.rgb(247, 181, 66), Color.WHITE);
+        LineDataSet dataSetm = createDataSet(ymVals, "m",
+                Color.rgb(213, 109, 98), Color.rgb(213, 109, 98), Color.WHITE);
+        LineDataSet dataSetn = createDataSet(ynVals, "n",
+                Color.rgb(242, 181, 70), Color.rgb(242, 181, 70), Color.WHITE);
 
         LineData data = new LineData();
         data.addDataSet(dataSetn);

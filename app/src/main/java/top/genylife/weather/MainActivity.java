@@ -1,15 +1,19 @@
 package top.genylife.weather;
 
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
@@ -18,7 +22,7 @@ import com.baidu.location.LocationClientOption;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -65,9 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mLocationClient.registerLocationListener(new BDLocationListener() {
             @Override
             public void onReceiveLocation(BDLocation location) {
-                WeatherFragment fragment = WeatherFragment.create(new Location(location.getLongitude(), location.getLatitude())
-                        , location.getDistrict());
-                pagerAdapter.addFragment(fragment);
+                pagerAdapter.addItem(location.getDistrict(), new Location(location.getLongitude(), location.getLatitude()));
                 mLocationClient.stop();
             }
         });
@@ -75,12 +77,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mLocationClient.start();
 
         ArrayList<Fragment> fragments = new ArrayList<>();
-        Iterator<Map.Entry<String, Location>> iterator = mAllLocation.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Location> next = iterator.next();
-            fragments.add(WeatherFragment.create(next.getValue(), next.getKey()));
+        List<String> districts = new ArrayList<>();
+        List<Location> locations = new ArrayList<>();
+        for (Map.Entry<String, Location> next : mAllLocation.entrySet()) {
+            districts.add(next.getKey());
+            locations.add(next.getValue());
         }
-        pagerAdapter = new FragmentsPagerAdapter(getSupportFragmentManager(), fragments);
+        pagerAdapter = new FragmentsPagerAdapter(getSupportFragmentManager(), districts, locations);
         mViewPager.setAdapter(pagerAdapter);
     }
 
@@ -123,13 +126,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void actionSetting() {
-        Set<? extends Map.Entry<String, ?>> entries = mAllLocation.entrySet();
+        final LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        for (Map.Entry<String, Location> next : mAllLocation.entrySet()) {
+            CheckBox box = new CheckBox(this);
+            box.setText(next.getKey());
+            layout.addView(box);
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("移除位置")
+                .setView(layout)
+                .setPositiveButton("移除", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        SharedPreferences sharedPreferences = getSharedPreferences("Weather", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        for (int i = 0; i < layout.getChildCount(); i++) {
+                            CheckBox checkBox = (CheckBox) layout.getChildAt(i);
+                            if(checkBox.isChecked()) {
+                                editor.remove(checkBox.getText().toString());
+                                mAllLocation.remove(checkBox.getText().toString());
+                                pagerAdapter.removeItem(checkBox.getText().toString());
+                            }
+                        }
+                        editor.apply();
+                        dialog.dismiss();
+                    }
+                })
+                .show();
+
     }
 
     private void actionAdd() {
         AddLocationDialog.create(new AddLocationDialog.CallBack() {
             @Override
             public void call(final String text) {
+                for (Map.Entry<String, Location> next : mAllLocation.entrySet()) {
+                    if(next.getKey().contains(text)) return;
+                }
                 mRetrofit.create(LocationService.class)
                         .getLocation(LocationService.ak, LocationService.output, text, LocationService.mcode)
                         .subscribeOn(Schedulers.io())
@@ -148,10 +182,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 if(s.equals("区县")) temp = "区";
                                 editor.putStringSet(text + temp, tempSet);
                                 editor.apply();
-                                pagerAdapter.addFragment(WeatherFragment.create(
-                                        new Location(geoLocation.getResult().getLocation().getLng()
-                                                , geoLocation.getResult().getLocation().getLat())
-                                        , text + temp));
+                                Location location = new Location(geoLocation.getResult().getLocation().getLng()
+                                        , geoLocation.getResult().getLocation().getLat());
+                                pagerAdapter.addItem(text + temp, location);
+
+                                mAllLocation.put(text + temp, location);
                             }
                         });
             }

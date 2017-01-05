@@ -77,10 +77,10 @@ public class WeatherView extends FrameLayout {
                 mWeatherImage.setImageResource(R.mipmap.ic_fog);
                 break;
             case HAZE:
-                mWeatherImage.setImageResource(R.mipmap.ic_fog);
+                mWeatherImage.setImageResource(R.mipmap.ic_haze);
                 break;
             case SLEET:
-                mWeatherImage.setImageResource(R.mipmap.ic_fog);
+                mWeatherImage.setImageResource(R.mipmap.ic_sleet);
                 break;
                         
         }

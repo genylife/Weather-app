@@ -64,9 +64,6 @@ public class AddLocationDialog extends BlurDialogFragment {
         mSearchView = (SearchView) view.findViewById(R.id.search_view);
         mSearchView.onActionViewExpanded();
         mSearchView.setIconifiedByDefault(true);
-        //        int id = mSearchView.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
-        //        TextView textView = (TextView) mSearchView.findViewById(id);
-        //        textView.setTextColor(Color.WHITE);
         mDatasRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
         mAdapter = new DistrictAdapter(getActivity());
         mDatasRecyclerView.setAdapter(mAdapter);
