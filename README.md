@@ -10,4 +10,4 @@
 * BaiduLBS
 * Databinding
 
-<img src="https://github.com/genylife/One/blob/master/screenshot.png" width = "300" height = "700" alt="screenshot" align=center />
+<img src="https://github.com/genylife/Weather-app/blob/master/screenshot.png" width = "360" height = "640" alt="screenshot" align=center />
